@@ -1,60 +1,50 @@
 #include "system.h"
 
-volatile uint8_t* sendPoint;
-volatile uint8_t sendCnt;
-
-volatile uint8_t byteShift;
+volatile uint8_t* sendPoint;    // Pointer to the buffer to be sent
+volatile uint8_t sendCnt;       // Number of bytes to be sent
+volatile uint8_t byteShift;     // Number of bits to be shifted out
+volatile GPIO_TypeDef *transmitPort;    // GPIO port to be used for transmission
+volatile uint8_t transmitPin;           // GPIO pin to be used for transmission
 
 volatile uint8_t frameStarted, receivedByte, tLast;
-
-
 
 static const struct {
     GPIO_TypeDef *port;
     uint16_t pin;
 } oswPins[4] = {
-    {GPIOA, 4},
-    {GPIOA, 6},
-    {GPIOA, 7},
-    {GPIOB, 1},
+    {GPIOA, 1<<4},
+    {GPIOA, 1<<6},
+    {GPIOA, 1<<7},
+    {GPIOB, 1<<1},
 };
-
-volatile GPIO_TypeDef *transmitPort;
-volatile uint8_t transmitPin;
 
 void oswSend(uint8_t* buf, uint8_t len, uint8_t pin) {
     while(sendCnt);
-    transmitPort = oswPins[pin].port;
-    transmitPin = oswPins[pin].pin;
-    byteShift = 0xFF;
-    sendPoint=buf;
-    sendCnt=len;
+    transmitPort = oswPins[pin].port;   // Set GPIO port to be used for transmission
+    transmitPin = oswPins[pin].pin;     // Set GPIO pin to be used for transmission
+    sendPoint=buf;                      // Set pointer to the buffer to be sent
+    sendCnt=len;                        // Set number of bytes to be sent
+    byteShift=0xFF;                     // Set byte shift
 }
 
-uint8_t byteToSend;
 void oswSendByte(uint8_t payload, uint8_t pin) {
-    byteToSend = payload;
-    oswSend(&byteToSend, 1, pin);
+    oswSend(&payload, 1, pin);
 }
 
 void TIM17_IRQHandler() {
-    GPIOA->BSRR = GPIO_BSRR_BS_9;  // interrupt enter notification to LA
-    TIM17->SR = 0;
-    if (sendCnt) {
-        if (byteShift & 1)
-           transmitPort->BRR = transmitPin;
-        else
-           transmitPort->BSRR = transmitPin;
+    GPIOA->BSRR = GPIO_BSRR_BS_9;   // interrupt enter notification to LA
+    TIM17->SR = 0;                  // clear interrupt flag
+    if (sendCnt) {                  // if there is something to send
+        if (byteShift & 1) transmitPort->BRR = transmitPin; 
+        else transmitPort->BSRR = transmitPin;
         TIM17->CNT = (((*sendPoint) >> byteShift) & 1) ? (65535 - 200) : (65535 - 400);
         byteShift++;
-
         if (byteShift > 7) {
             byteShift = 0;
             sendPoint++;
             sendCnt--;
         }
-    } else
-        transmitPort->BSRR = transmitPin;
+    } else transmitPort->BSRR = transmitPin;
     frameStarted = 0;
     GPIOA->BSRR = GPIO_BSRR_BR_9;  // interrupt exit notification to LA
 }

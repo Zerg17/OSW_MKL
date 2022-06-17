@@ -24,4 +24,14 @@ void USART1_IRQHandler() {
         sendByte(receivedChar,3);
         uartWrite(receivedChar);
     }
+
+    if(USART1->ISR & USART_ISR_FE){ // Framing error
+        USART1->ICR = USART_ICR_FECF;
+    }
+    if(USART1->ISR & USART_ISR_ORE){ // Overrun error    
+        USART1->ICR = USART_ICR_ORECF;
+    }
+    if(USART1->ISR & USART_ISR_NE){ // Noise error
+        USART1->ICR = USART_ICR_NCF;
+    }
 }

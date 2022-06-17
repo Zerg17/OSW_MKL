@@ -1,21 +1,19 @@
 #include "system.h"
 
 static inline void rccInit(void) {
-    FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY;
+    FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY;                                      // Enable prefetch and 1 wait states
 
-    RCC->CFGR = RCC_CFGR_PLLMUL12;
+    RCC->CFGR = RCC_CFGR_PLLMUL12;                                                          // PLL x12
 
-    RCC->CR |= RCC_CR_PLLON;
-    while (!(RCC->CR & RCC_CR_PLLRDY))
-        ;
+    RCC->CR |= RCC_CR_PLLON;                                                                // Enable PLL
+    while (!(RCC->CR & RCC_CR_PLLRDY));                                                     // Wait for PLL to be ready
 
-    RCC->CFGR |= RCC_CFGR_SW_PLL;
-    while (!(RCC->CFGR & RCC_CFGR_SWS_PLL))
-        ;
+    RCC->CFGR |= RCC_CFGR_SW_PLL;                                                           // Select PLL as system clock source
+    while (!(RCC->CFGR & RCC_CFGR_SWS_PLL));                                                // Wait for PLL to be selected
 
-    RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOFEN;
-    RCC->APB2ENR |= RCC_APB2ENR_USART1EN | RCC_APB2ENR_TIM17EN | RCC_APB2ENR_SYSCFGCOMPEN;
-    RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+    RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOFEN;            // Enable GPIOA, GPIOB, GPIOF
+    RCC->APB2ENR |= RCC_APB2ENR_USART1EN | RCC_APB2ENR_TIM17EN | RCC_APB2ENR_SYSCFGCOMPEN;  // Enable USART1, TIM17, SYSCFG
+    RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;                                                    // Enable TIM14
 }
 
 static inline void gpioInit(void) {
@@ -45,27 +43,22 @@ static inline void gpioInit(void) {
 }
 
 void uartWrite(uint8_t d) {
-    while (!(USART1->ISR & USART_ISR_TXE))
-        ;
-    USART1->TDR = d;
+    while (!(USART1->ISR & USART_ISR_TXE)) __nop(); // Wait for TXE
+    USART1->TDR = d;                                // Send data
 }
 
 static inline void uartInit(void) {
-#if (BAUD > 3000000)
-    // high speed mode (oversampling by 8)
-    USART1->BRR = ((2 * F_CPU / BAUD) & 0xFFF0) +
-                  (((2 * F_CPU / BAUD) & 0x000F) >> 1);
-    USART1->CR1 = USART_CR1_TE | USART_CR1_OVER8;
-#else
-    // normal mode (oversampling by 16)
-    USART1->BRR = F_CPU / BAUD;
-    USART1->CR1 = USART_CR1_TE;
-#endif
-
-    // USART receiver initialization
-    USART1->CR1 |= USART_CR1_RXNEIE | USART_CR1_RE;  // receiver enable
-
-    USART1->CR1 |= USART_CR1_UE;
+    #if (BAUD > 3000000)
+        // high speed mode (oversampling by 8)
+        USART1->BRR = ((2 * F_CPU / BAUD) & 0xFFF0) + (((2 * F_CPU / BAUD) & 0x000F) >> 1);
+        USART1->CR1 = USART_CR1_OVER8;
+    #else
+        // normal mode (oversampling by 16)
+        USART1->BRR = F_CPU / BAUD;
+    #endif
+    
+    USART1->CR3 = USART_CR3_EIE; // error interrupt enable
+    USART1->CR1 = USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
     xdev_out(uartWrite);
 }
 
@@ -88,8 +81,8 @@ static inline void tim14Init(void) {
 }
 
 static inline void tim17Init(void) {
-    TIM17->DIER |= TIM_DIER_UIE;
-    TIM17->CR1 |= TIM_CR1_CEN;
+    TIM17->DIER |= TIM_DIER_UIE;    // enable update interrupt
+    TIM17->CR1 |= TIM_CR1_CEN;      // enable timer
 }
 
 static inline void irqInit(void) {
@@ -101,7 +94,7 @@ static inline void irqInit(void) {
     NVIC_EnableIRQ(EXTI4_15_IRQn);
     NVIC_EnableIRQ(TIM17_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
-    SysTick_Config(F_CPU / 100);
+    SysTick_Config(F_CPU / 100);    // 100 Hz
 }
 
 void sysInit() {
