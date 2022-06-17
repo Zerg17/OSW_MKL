@@ -1,5 +1,6 @@
 #pragma once
 
+#include "osw.h"
 #include "stm32f0xx.h"
 #include "xprintf.h"
 
