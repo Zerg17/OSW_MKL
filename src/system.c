@@ -36,14 +36,14 @@ static inline void gpioInit(void) {
     GPIOA->OTYPER |= /*GPIO_OTYPER_OT_9 |*/ GPIO_OTYPER_OT_7 | GPIO_OTYPER_OT_6 | GPIO_OTYPER_OT_4;
     GPIOB->OTYPER |= GPIO_OTYPER_OT_1;
 
-    GPIOA->MODER |= GPIO_MODER_MODER9_0 | /*GPIO_MODER_MODER7_0 |*/ GPIO_MODER_MODER6_0 | GPIO_MODER_MODER4_0 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER2_1;
+    GPIOA->MODER |= GPIO_MODER_MODER9_0 | GPIO_MODER_MODER7_0 | GPIO_MODER_MODER6_0 | GPIO_MODER_MODER4_0 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER2_1;
     GPIOB->MODER |= GPIO_MODER_MODER1_0;
     GPIOA->AFR[1] |= 0x00000020;
     GPIOA->AFR[0] |= 0x40001100;
 }
 
 void uartWrite(uint8_t d) {
-    while (!(USART1->ISR & USART_ISR_TXE)) __nop(); // Wait for TXE
+    while (!(USART1->ISR & USART_ISR_TXE)) __NOP(); // Wait for TXE
     USART1->TDR = d;                                // Send data
 }
 
@@ -73,16 +73,15 @@ static inline void extiInit(void) {
 }
 
 static inline void tim14Init(void) {
-    // TIM14->ARR = 319;
-    // TIM14->DIER |= TIM_DIER_UIE;
-    // TIM14->CR1 |= TIM_CR1_CEN;
-    // TIM17->PSC=47;
-    // TIM17->CR1 |= TIM_CR1_CEN;
+    TIM14->PSC=50;
+    TIM14->DIER |= TIM_DIER_UIE;    // enable update interrupt
+    TIM14->CR1 |= TIM_CR1_CEN;
 }
 
 static inline void tim17Init(void) {
+    TIM17->PSC=0;
     TIM17->DIER |= TIM_DIER_UIE;    // enable update interrupt
-    TIM17->CR1 |= TIM_CR1_CEN;      // enable timer
+    // TIM17->CR1 |= TIM_CR1_CEN;      // enable timer
 }
 
 static inline void irqInit(void) {
@@ -93,6 +92,7 @@ static inline void irqInit(void) {
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_EnableIRQ(EXTI4_15_IRQn);
     NVIC_EnableIRQ(TIM17_IRQn);
+    NVIC_EnableIRQ(TIM14_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
     SysTick_Config(F_CPU / 100);    // 100 Hz
 }

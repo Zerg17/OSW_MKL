@@ -14,3 +14,7 @@ void SysTick_Handler(void) {
 
 }
 
+void HardFault_Handler(void){
+    xprintf("HardFault_Handler\n");
+    while(1);
+}
