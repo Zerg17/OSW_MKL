@@ -13,10 +13,11 @@ int main(void) {
         //     tim1 += 2;
         //         oswSend(sendBuf, sizeof(sendBuf), 2);
         // }
-        // if (tim2 <= tick) {
-        //     tim2 += 200;
-        //     xprintf("test\n");
-        // }
+        if (tim2 <= tick) {
+            tim2 += 2000;
+            // xprintf("test\n");
+            oswSendByte(1,2);
+        }
         __WFI();
     }
 }

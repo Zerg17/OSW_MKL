@@ -1,5 +1,6 @@
 #include "sysControl.h"
 #include "system.h"
+#include "osw.h"
 
 uint32_t volatile tick=0;
 uint32_t sec_d=0;
@@ -11,7 +12,7 @@ void SysTick_Handler(void) {
         sec_d=0;
         sec++;
     }
-
+    oswReceiverReset();
 }
 
 void HardFault_Handler(void){
