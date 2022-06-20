@@ -72,14 +72,14 @@ static inline void extiInit(void) {
     EXTI->IMR = EXTI_IMR_IM7 | EXTI_IMR_IM6 | EXTI_IMR_IM4 | EXTI_IMR_IM1;
 }
 
-static inline void tim14Init(void) {
-    TIM14->PSC=5;                  // 
-    TIM14->DIER |= TIM_DIER_UIE;    // enable update interrupt
+static inline void tim14Init(void) {    // TIM14 - 960KHz(tick) - ~15Hz(period)
+    TIM14->PSC=49;
+    // TIM14->DIER |= TIM_DIER_UIE;    // enable update interrupt
     TIM14->CR1 |= TIM_CR1_CEN;      // enable timer
 }
 
-static inline void tim17Init(void) {
-    TIM17->PSC=0;
+static inline void tim17Init(void) {    // TIM17 - 960KHz(tick) - ~15Hz(period)
+    TIM17->PSC=49;
     TIM17->DIER |= TIM_DIER_UIE;    // enable update interrupt
 }
 
@@ -93,7 +93,7 @@ static inline void irqInit(void) {
     NVIC_EnableIRQ(TIM14_IRQn);
     NVIC_EnableIRQ(TIM17_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
-    SysTick_Config(F_CPU / 100);    // 100 Hz
+    SysTick_Config(F_CPU / 200);    // 200 Hz   //osw timeout = 5-10ms
 }
 
 void sysInit() {
