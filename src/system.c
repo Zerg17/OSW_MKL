@@ -23,7 +23,7 @@ static inline void gpioInit(void) {
     // PA4  - IO1           - GPIO_OD(EXTI4_15)
     // PA3  - DEBUG_RX      - USART1_RX
     // PA2  - DEBUG_TX      - USART1_TX
-    // PB1  - IO4           - GPIO_OD(EXTI4_15)
+    // PB1  - IO4           - GPIO_OD(EXTI0_1)
     // PF0  - BUTTON        - GPIO_IN
 
     // 0 - GPIO_OUT
@@ -73,15 +73,14 @@ static inline void extiInit(void) {
 }
 
 static inline void tim14Init(void) {
-    TIM14->PSC=50;
+    TIM14->PSC=5;                  // 
     TIM14->DIER |= TIM_DIER_UIE;    // enable update interrupt
-    TIM14->CR1 |= TIM_CR1_CEN;
+    TIM14->CR1 |= TIM_CR1_CEN;      // enable timer
 }
 
 static inline void tim17Init(void) {
     TIM17->PSC=0;
     TIM17->DIER |= TIM_DIER_UIE;    // enable update interrupt
-    // TIM17->CR1 |= TIM_CR1_CEN;      // enable timer
 }
 
 static inline void irqInit(void) {
@@ -91,8 +90,8 @@ static inline void irqInit(void) {
 
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_EnableIRQ(EXTI4_15_IRQn);
-    NVIC_EnableIRQ(TIM17_IRQn);
     NVIC_EnableIRQ(TIM14_IRQn);
+    NVIC_EnableIRQ(TIM17_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);
     SysTick_Config(F_CPU / 100);    // 100 Hz
 }

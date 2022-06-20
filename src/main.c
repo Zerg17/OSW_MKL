@@ -22,7 +22,7 @@ int main(void) {
 }
 
 void USART1_IRQHandler() {
-    if (USART1->ISR & USART_ISR_RXNE) {
+    if (USART1->ISR & USART_ISR_RXNE) {  //receive buffer is not empty
         uint8_t receivedChar = (uint8_t)(USART1->RDR);
         // oswSendByte(receivedChar, 2);
         uartWrite(receivedChar);
