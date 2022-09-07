@@ -1,19 +1,24 @@
 #include "system.h"
+#include "ws2812.h"
 
 static inline void rccInit(void) {
-    FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY;                                      // Enable prefetch and 1 wait states
+    FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY;      // Enable prefetch and 1 wait states
 
-    RCC->CFGR = RCC_CFGR_PLLMUL12;                                                          // PLL x12
+    RCC->CFGR = RCC_CFGR_PLLMUL12;                          // PLL x12
 
-    RCC->CR |= RCC_CR_PLLON;                                                                // Enable PLL
-    while (!(RCC->CR & RCC_CR_PLLRDY));                                                     // Wait for PLL to be ready
+    RCC->CR |= RCC_CR_PLLON;                                // Enable PLL
+    while (!(RCC->CR & RCC_CR_PLLRDY));                     // Wait for PLL to be ready
 
-    RCC->CFGR |= RCC_CFGR_SW_PLL;                                                           // Select PLL as system clock source
-    while (!(RCC->CFGR & RCC_CFGR_SWS_PLL));                                                // Wait for PLL to be selected
+    RCC->CFGR |= RCC_CFGR_SW_PLL;                           // Select PLL as system clock source
+    while (!(RCC->CFGR & RCC_CFGR_SWS_PLL));                // Wait for PLL to be selected
 
-    RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOFEN;            // Enable GPIOA, GPIOB, GPIOF
-    RCC->APB2ENR |= RCC_APB2ENR_USART1EN | RCC_APB2ENR_TIM17EN | RCC_APB2ENR_SYSCFGCOMPEN;  // Enable USART1, TIM17, SYSCFG
-    RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;                                                    // Enable TIM14
+    RCC->AHBENR 
+        |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN 
+        | RCC_AHBENR_GPIOFEN | RCC_AHBENR_DMAEN;            // Enable GPIOA, GPIOB, GPIOF, DMA
+    RCC->APB2ENR 
+        |= RCC_APB2ENR_USART1EN | RCC_APB2ENR_TIM17EN 
+        | RCC_APB2ENR_SYSCFGCOMPEN | RCC_APB2ENR_TIM1EN;    // Enable USART1, TIM17, SYSCFG, TIM1
+    RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;                    // Enable TIM14
 }
 
 static inline void gpioInit(void) {
@@ -33,10 +38,10 @@ static inline void gpioInit(void) {
     GPIOA->ODR |= GPIO_ODR_7 | GPIO_ODR_6 | GPIO_ODR_4;
     GPIOB->ODR |= GPIO_ODR_1;
 
-    GPIOA->OTYPER |= /*GPIO_OTYPER_OT_9 |*/ GPIO_OTYPER_OT_7 | GPIO_OTYPER_OT_6 | GPIO_OTYPER_OT_4;
+    GPIOA->OTYPER |= GPIO_OTYPER_OT_9 | GPIO_OTYPER_OT_7 | GPIO_OTYPER_OT_6 | GPIO_OTYPER_OT_4;
     GPIOB->OTYPER |= GPIO_OTYPER_OT_1;
 
-    GPIOA->MODER |= GPIO_MODER_MODER9_0 | GPIO_MODER_MODER7_0 | GPIO_MODER_MODER6_0 | GPIO_MODER_MODER4_0 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER2_1;
+    GPIOA->MODER |= GPIO_MODER_MODER9_1 | GPIO_MODER_MODER7_0 | GPIO_MODER_MODER6_0 | GPIO_MODER_MODER4_0 | GPIO_MODER_MODER3_1 | GPIO_MODER_MODER2_1;
     GPIOB->MODER |= GPIO_MODER_MODER1_0;
     GPIOA->AFR[1] |= 0x00000020;
     GPIOA->AFR[0] |= 0x40001100;
@@ -103,5 +108,6 @@ void sysInit() {
     extiInit();
     tim14Init();
     tim17Init();
+    ws2812Init();
     irqInit();
 }
