@@ -24,12 +24,15 @@ void ws2812Init(void){
 }
 
 void ws2812Write(void){
+    // TIM1->CCR2=0;
     for(int i = 0; i<LED_NUM*24; i++){
-        ws2812Buf[i]=((((uint8_t*)led)[i/8]<<i%8)&0x80)?47:17;//47 17
+        ws2812Buf[i]=((((uint8_t*)led)[i/8]<<i%8)&0x80)?47:18;
     }
+    ws2812Buf[LED_NUM*24]=0;
     DMA1_Channel5->CCR &=~DMA_CCR_EN;
     DMA1_Channel5->CMAR = (uint32_t)ws2812Buf;
     DMA1_Channel5->CNDTR = sizeof(ws2812Buf);
+    TIM1->CNT=0;
     DMA1_Channel5->CCR |= DMA_CCR_EN;
 }
 

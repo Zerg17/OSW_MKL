@@ -93,8 +93,8 @@ static inline void irqInit(void) {
     NVIC_SetPriority(EXTI4_15_IRQn, 2);
     NVIC_SetPriority(EXTI0_1_IRQn, 2);
 
-    NVIC_EnableIRQ(EXTI0_1_IRQn);
-    NVIC_EnableIRQ(EXTI4_15_IRQn);
+    // NVIC_EnableIRQ(EXTI0_1_IRQn);
+    // NVIC_EnableIRQ(EXTI4_15_IRQn);
     NVIC_EnableIRQ(TIM14_IRQn);
     NVIC_EnableIRQ(TIM17_IRQn);
     NVIC_EnableIRQ(USART1_IRQn);

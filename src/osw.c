@@ -17,7 +17,6 @@ static const struct {
 };
 
 void oswSend(uint8_t* buf, uint8_t len, uint8_t pin) {
-    GPIOA->BSRR = GPIO_BSRR_BS_9;
     while (sendCnt);
     transmitPort = oswPins[pin].port;  // Set GPIO port to be used for transmission
     transmitPin = oswPins[pin].pin;    // Set GPIO pin to be used for transmission
@@ -26,7 +25,6 @@ void oswSend(uint8_t* buf, uint8_t len, uint8_t pin) {
     sendCnt = len;                     // Set number of bytes to be sent
     byteShift = 0;
     TIM17->CR1 |= TIM_CR1_CEN;
-    GPIOA->BSRR = GPIO_BSRR_BR_9;
 }
 
 void oswSendByte(uint8_t payload, uint8_t pin) {

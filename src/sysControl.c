@@ -12,6 +12,9 @@ void SysTick_Handler(void) {
         sec_d=0;
         sec++;
     }
+
+
+
     oswReceiverReset();
 }
 
